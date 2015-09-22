@@ -1,0 +1,38 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    repositories {
+        mavenCentral()
+        // Not everything is available in a Maven/Gradle repository.  Use a local 'libs/' directory for these.
+        flatDir {
+            dirs 'libs'
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.ammatti.stanley.sipdialer"
+        minSdkVersion 15
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+
+    sourceSets { main { java.srcDirs = ['src/main/java', 'src/main/libs'] } }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.squareup:otto:1.3.8'
+
+}

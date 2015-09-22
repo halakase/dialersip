@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" android:background="#ff494f51" android:id="@+id/root_root">
+
+    <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="112dp" android:id="@+id/header">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SenderMan"
+                android:id="@+id/textView" android:layout_alignParentBottom="true" android:layout_marginLeft="50dp"
+                android:layout_marginBottom="50dp" android:textSize="34dp" android:textColor="#fffffbff"
+                android:layout_centerHorizontal="true"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="is calling"
+                android:id="@+id/textView5" android:textColor="#ffffffff"
+                android:layout_alignParentBottom="true" android:layout_centerHorizontal="true"
+                android:layout_marginBottom="18dp"/>
+    </RelativeLayout>
+    <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        <ImageView
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:id="@+id/imageView" android:layout_centerInParent="true" android:src="@mipmap/sender_avatar"
+                android:layout_marginTop="-50dp"/>
+    </RelativeLayout>
+    <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="0:00"
+                android:id="@+id/textView4" android:layout_centerHorizontal="true" android:visibility="invisible"/>
+    </RelativeLayout>
+    <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+        <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:layout_above="@+id/footer_divider"
+                android:visibility="visible">
+            <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:id="@+id/imageView10" android:layout_above="@+id/footer_rel" android:src="@mipmap/accept"
+                    android:layout_toLeftOf="@+id/imageView9" android:visibility="visible"/>
+            <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:id="@+id/imageView9" android:src="@mipmap/decline" android:layout_centerHorizontal="true"
+                    android:visibility="invisible" android:layout_above="@+id/footer_rel"/>
+            <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:id="@+id/imageView2" android:layout_gravity="center_horizontal"
+                    android:src="@mipmap/decline"
+                    android:layout_above="@+id/footer_rel" android:layout_toRightOf="@+id/imageView9"/>
+            <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+            </RelativeLayout>
+            <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="40dp" android:layout_alignParentBottom="true" android:id="@+id/footer_rel"
+                    android:layout_marginTop="30dp" android:visibility="invisible">
+                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                                android:layout_weight="1" android:id="@+id/temp_left"
+                                android:layout_toLeftOf="@+id/temp_center">
+                    <ImageView android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:id="@+id/imageView3"
+                               android:layout_weight="1"
+                               android:src="@mipmap/record_start"
+                               android:visibility="visible" android:layout_centerHorizontal="true"/>
+                    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                               android:id="@+id/imageView11" android:src="@mipmap/mic_turn_on"
+                               android:visibility="gone" android:layout_centerHorizontal="true"/>
+                </RelativeLayout>
+                <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:layout_weight="1" android:layout_centerHorizontal="true"
+                                android:id="@+id/temp_center">
+                    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                               android:id="@+id/imgRecStop" android:src="@mipmap/record_stop"/>
+                    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                               android:id="@+id/imRecStart" android:layout_weight="1" android:src="@mipmap/mic_on"/>
+                </RelativeLayout>
+                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                                android:layout_weight="1" android:id="@+id/temp_right"
+                                android:layout_toRightOf="@+id/temp_center">
+                    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                               android:id="@+id/imageView14" android:layout_weight="1" android:src="@mipmap/spekear_on"
+                               android:layout_centerHorizontal="true"/>
+                    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                               android:id="@+id/imageView15" android:src="@mipmap/speaker_off"
+                               android:visibility="gone" android:layout_centerHorizontal="true"/>
+                </RelativeLayout>
+            </RelativeLayout>
+        </RelativeLayout>
+        <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="30dp" android:id="@+id/footer_divider" android:layout_alignParentBottom="true">
+        </RelativeLayout>
+    </RelativeLayout>
+</LinearLayout>
