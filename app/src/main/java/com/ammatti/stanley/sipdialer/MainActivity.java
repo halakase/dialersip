@@ -12,9 +12,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity_layout);
-        Intent startSip = new Intent();
-        startSip.setClass(this, SipActivity.class);
-        this.startActivity(startSip);
+        Intent sipIntent = new Intent(this, SipService.class);
+        startService(sipIntent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent startSipActivity = new Intent();
+        startSipActivity.setClass(this, SipActivity.class);
+        this.startActivity(startSipActivity);
     }
 
     @Override

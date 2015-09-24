@@ -14,10 +14,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.ammatti.stanley.sipdialer.events.Event;
 import com.ammatti.stanley.sipdialer.events.EventName;
-import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
-
 import com.ammatti.stanley.sipdialer.events.requests.StopCallRequest;
 import com.ammatti.stanley.sipdialer.events.responses.CallAcceptedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.CallDeclinedResponse;
@@ -29,27 +27,29 @@ import com.ammatti.stanley.sipdialer.events.responses.dev.RecOffResponse;
 import com.ammatti.stanley.sipdialer.events.responses.dev.RecOnResponse;
 import com.ammatti.stanley.sipdialer.events.responses.dev.SpeakerOffResponse;
 import com.ammatti.stanley.sipdialer.events.responses.dev.SpeakerOnResponse;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 /**
  * Created by user on 25.08.15.
  */
 public class IncomingCallActivity extends Activity {
 
-    Bus bus = SipApplication.getBusInstance();// todo: REGISTER INSTANCES OF BUS OBJECTS
+    private Bus bus;
 
     private LinearLayout ringerLayout;
 
-    private int ACCEPT_INCOMING_VIEW_ID = R.id.imageView10;
-    private int DENY_INCOMING_VIEW_ID = R.id.imageView2;
-    private int DENY_CALL_VIEW_ID = R.id.imageView9;
+    private int ACCEPT_INCOMING_VIEW_ID = R.id.accept_call;
+    private int DENY_INCOMING_VIEW_ID = R.id.reject_call;
+    private int DENY_CALL_VIEW_ID = R.id.handoff_call;
     private int FOOTER_ID = R.id.footer_rel;
-    private int TIME_TEXT_VIEW_ID = R.id.textView4;
-    private int MIC_TURN_OFF_ID = R.id.imageView3;
-    private int MIC_TURN_ON_ID = R.id.imageView11;
+    private int TIME_TEXT_VIEW_ID = R.id.time;
+    private int MIC_TURN_OFF_ID = R.id.mic_off;
+    private int MIC_TURN_ON_ID = R.id.mic_on;
     private int REC_START_ID = R.id.imRecStart;
     private int REC_STOP_ID = R.id.imgRecStop;
-    private int SPEAKER_ON_ID = R.id.imageView14;
-    private int SPEAKER_OFF_ID = R.id.imageView15;
+    private int SPEAKER_ON_ID = R.id.speaker_on;
+    private int SPEAKER_OFF_ID = R.id.speaker_off;
 
     private ImageView ACCEPT_INCOMING_VIEW;
     private ImageView DENY_INCOMING_VIEW;
@@ -167,16 +167,22 @@ public class IncomingCallActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        bus = SipApplication.getBusInstance();
+        bus.register(this);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
-
         isTimerStarted = false;
         currentTimer = 0;
         stopTimer = true;
         handler.removeCallbacks(updateTimer);
         vibrator.cancel();
-
         stopBeep();
+        bus.unregister(this);
     }
 
     @Override
@@ -185,18 +191,18 @@ public class IncomingCallActivity extends Activity {
         // note: this is an exclusive case when Activity receives incoming call event while it is in call or near it(dialing or nearly received new one)
     }
 
-    private void initLayout(){
+    private void initLayout() {
         setContentView(R.layout.incomingcall_activity_layout);
         ringerLayout = (LinearLayout) findViewById(R.id.root_root);
 
         ACCEPT_INCOMING_VIEW = (ImageView) ringerLayout.findViewById(ACCEPT_INCOMING_VIEW_ID);
-        DENY_INCOMING_VIEW =(ImageView) ringerLayout.findViewById(DENY_INCOMING_VIEW_ID);
-        DENY_CALL_VIEW =(ImageView) ringerLayout.findViewById(DENY_CALL_VIEW_ID);
-        MIC_TURN_OFF_VIEW =(ImageView) ringerLayout.findViewById(MIC_TURN_OFF_ID);
-        MIC_TURN_ON_VIEW =(ImageView) ringerLayout.findViewById(MIC_TURN_ON_ID);
-        REC_STOP_VIEW =(ImageView) ringerLayout.findViewById(REC_STOP_ID);
-        REC_START_VIEW =(ImageView) ringerLayout.findViewById(REC_START_ID);
-        SPEAKER_ON_VIEW =(ImageView) ringerLayout.findViewById(SPEAKER_ON_ID);
+        DENY_INCOMING_VIEW = (ImageView) ringerLayout.findViewById(DENY_INCOMING_VIEW_ID);
+        DENY_CALL_VIEW = (ImageView) ringerLayout.findViewById(DENY_CALL_VIEW_ID);
+        MIC_TURN_OFF_VIEW = (ImageView) ringerLayout.findViewById(MIC_TURN_OFF_ID);
+        MIC_TURN_ON_VIEW = (ImageView) ringerLayout.findViewById(MIC_TURN_ON_ID);
+        REC_STOP_VIEW = (ImageView) ringerLayout.findViewById(REC_STOP_ID);
+        REC_START_VIEW = (ImageView) ringerLayout.findViewById(REC_START_ID);
+        SPEAKER_ON_VIEW = (ImageView) ringerLayout.findViewById(SPEAKER_ON_ID);
         SPEAKER_OFF_VIEW = (ImageView) ringerLayout.findViewById(SPEAKER_OFF_ID);
 
         ringerLayout.findViewById(ACCEPT_INCOMING_VIEW_ID).setOnClickListener(inCallListener);
@@ -209,9 +215,9 @@ public class IncomingCallActivity extends Activity {
         ringerLayout.findViewById(SPEAKER_ON_ID).setOnClickListener(inCallListener);
         ringerLayout.findViewById(SPEAKER_OFF_ID).setOnClickListener(inCallListener);
 
-        USER_NAME_VIEW = (TextView) ringerLayout.findViewById(R.id.textView);
-        TIMER_TEXT_VIEW = (TextView) ringerLayout.findViewById(R.id.textView4);
-        CALL_TYPE_TEXT_VIEW = (TextView) ringerLayout.findViewById(R.id.textView5);
+        USER_NAME_VIEW = (TextView) ringerLayout.findViewById(R.id.caller_name);
+        TIMER_TEXT_VIEW = (TextView) ringerLayout.findViewById(TIME_TEXT_VIEW_ID);
+        CALL_TYPE_TEXT_VIEW = (TextView) ringerLayout.findViewById(R.id.called_label);
 
         FOOTER = (RelativeLayout) ringerLayout.findViewById(R.id.footer_rel);
 
@@ -287,14 +293,12 @@ public class IncomingCallActivity extends Activity {
     }
 
     @Subscribe
-    public void onEvent(Object event) {
+    public void onEvent(Event event) {
         if (event instanceof CallStartedResponse) {
             startTimer();
         } else if (event instanceof CallStoppedResponse) {
             stopTimer();
-        }
-
-        else if (event instanceof MicOffResponse) {
+        } else if (event instanceof MicOffResponse) {
             MIC_TURN_OFF_VIEW.setVisibility(View.GONE);
             MIC_TURN_ON_VIEW.setVisibility(View.VISIBLE);
         } else if (event instanceof MicOnResponse) {

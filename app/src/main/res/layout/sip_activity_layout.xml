@@ -40,7 +40,7 @@
             android:id="@+id/address"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="10.36.182.138" />
+            android:text="10.36.182.208" />
     </LinearLayout>
 
     <LinearLayout
@@ -85,7 +85,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btu_reg"
+            android:id="@+id/btn_reg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Register"
@@ -115,7 +115,7 @@
             android:id="@+id/callee_number"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="5000" />
+            android:text="5000@10.36.182.208" />
     </LinearLayout>
 
     <LinearLayout
