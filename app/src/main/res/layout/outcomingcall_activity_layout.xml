@@ -172,7 +172,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
                         android:layout_weight="1"
-                        android:src="@mipmap/spekear_on" />
+                        android:src="@mipmap/speaker_on" />
 
                     <ImageView
                         android:id="@+id/speaker_off"

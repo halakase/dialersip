@@ -1,9 +1,12 @@
 package com.ammatti.stanley.sipdialer;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -16,10 +19,11 @@ import android.widget.TextView;
 
 import com.ammatti.stanley.sipdialer.events.Event;
 import com.ammatti.stanley.sipdialer.events.EventName;
+import com.ammatti.stanley.sipdialer.events.requests.AcceptCallRequest;
+import com.ammatti.stanley.sipdialer.events.requests.DeclineCallRequest;
 import com.ammatti.stanley.sipdialer.events.requests.StopCallRequest;
 import com.ammatti.stanley.sipdialer.events.responses.CallAcceptedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.CallDeclinedResponse;
-import com.ammatti.stanley.sipdialer.events.responses.CallStartedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.CallStoppedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.dev.MicOffResponse;
 import com.ammatti.stanley.sipdialer.events.responses.dev.MicOnResponse;
@@ -38,18 +42,17 @@ public class IncomingCallActivity extends Activity {
     private Bus bus;
 
     private LinearLayout ringerLayout;
-
-    private int ACCEPT_INCOMING_VIEW_ID = R.id.accept_call;
-    private int DENY_INCOMING_VIEW_ID = R.id.reject_call;
-    private int DENY_CALL_VIEW_ID = R.id.handoff_call;
-    private int FOOTER_ID = R.id.footer_rel;
-    private int TIME_TEXT_VIEW_ID = R.id.time;
-    private int MIC_TURN_OFF_ID = R.id.mic_off;
-    private int MIC_TURN_ON_ID = R.id.mic_on;
-    private int REC_START_ID = R.id.imRecStart;
-    private int REC_STOP_ID = R.id.imgRecStop;
-    private int SPEAKER_ON_ID = R.id.speaker_on;
-    private int SPEAKER_OFF_ID = R.id.speaker_off;
+    private int ACCEPT_INCOMING_VIEW_ID;
+    private int DENY_INCOMING_VIEW_ID;
+    private int DENY_CALL_VIEW_ID;
+    private int FOOTER_ID;
+    private int TIME_TEXT_VIEW_ID;
+    private int MIC_TURN_OFF_ID;
+    private int MIC_TURN_ON_ID;
+    private int REC_START_ID;
+    private int REC_STOP_ID;
+    private int SPEAKER_ON_ID;
+    private int SPEAKER_OFF_ID;
 
     private ImageView ACCEPT_INCOMING_VIEW;
     private ImageView DENY_INCOMING_VIEW;
@@ -75,6 +78,7 @@ public class IncomingCallActivity extends Activity {
     // Get instance of Vibrator from current Context
     private Vibrator vibrator;
 
+    // Get instance of MediaPlayer from current Context
     private MediaPlayer mMediaPlayer;
 
     Runnable updateTimer = new Runnable() {
@@ -110,30 +114,21 @@ public class IncomingCallActivity extends Activity {
                 DENY_INCOMING_VIEW.setVisibility(View.GONE);
                 // make timer visible
                 TIMER_TEXT_VIEW.setVisibility(View.VISIBLE);
-
-                bus.post(new CallAcceptedResponse(EventName.CALL_ACCEPTEDRESPONSE));
-
+                bus.post(new AcceptCallRequest(EventName.ACCEPT_CALL_REQUEST));
                 //isInCall = true;
-
                 vibrator.cancel();
                 stopBeep();
-
             } else if (view.getId() == DENY_INCOMING_VIEW_ID) { // decline incoming
-
-                bus.post(new CallDeclinedResponse(EventName.CALL_DECLINEDRESPONSE));
-
+                bus.post(new DeclineCallRequest(EventName.DECLINE_CALL_REQUEST));
                 vibrator.cancel();
                 stopBeep();
-
+                IncomingCallActivity.this.finish();
             } else if (view.getId() == DENY_CALL_VIEW_ID) { // decline current call
-
                 bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
-
                 //isInCall = false;
-
                 vibrator.cancel();
                 stopBeep();
-
+                IncomingCallActivity.this.finish();
             } else if (view.getId() == MIC_TURN_OFF_ID) { // decline incoming
                 MIC_TURN_OFF_VIEW.setVisibility(View.GONE);
                 MIC_TURN_ON_VIEW.setVisibility(View.VISIBLE);
@@ -163,7 +158,11 @@ public class IncomingCallActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initLayout();
+        Bundle bundle = getIntent().getExtras();
+        String caller = bundle.getString("caller");
+        vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
+        mMediaPlayer =  MediaPlayer.create(this, getSystemDefultRingtoneUri());
+        initLayout(caller);
     }
 
     @Override
@@ -191,8 +190,20 @@ public class IncomingCallActivity extends Activity {
         // note: this is an exclusive case when Activity receives incoming call event while it is in call or near it(dialing or nearly received new one)
     }
 
-    private void initLayout() {
+    private void initLayout(String caller) {
         setContentView(R.layout.incomingcall_activity_layout);
+        ACCEPT_INCOMING_VIEW_ID = R.id.accept_call;
+        DENY_INCOMING_VIEW_ID = R.id.reject_call;
+        DENY_CALL_VIEW_ID = R.id.handoff_call;
+        FOOTER_ID = R.id.footer_rel;
+        TIME_TEXT_VIEW_ID = R.id.time;
+        MIC_TURN_OFF_ID = R.id.mic_off;
+        MIC_TURN_ON_ID = R.id.mic_on;
+        REC_START_ID = R.id.imRecStart;
+        REC_STOP_ID = R.id.imgRecStop;
+        SPEAKER_ON_ID = R.id.speaker_on;
+        SPEAKER_OFF_ID = R.id.speaker_off;
+
         ringerLayout = (LinearLayout) findViewById(R.id.root_root);
 
         ACCEPT_INCOMING_VIEW = (ImageView) ringerLayout.findViewById(ACCEPT_INCOMING_VIEW_ID);
@@ -221,10 +232,8 @@ public class IncomingCallActivity extends Activity {
 
         FOOTER = (RelativeLayout) ringerLayout.findViewById(R.id.footer_rel);
 
-        // todo: SETUP REMOTE USER NAME
-        String name = "some name";
-
-        USER_NAME_VIEW.setText(name);
+        // SETUP REMOTE USER NAME
+        USER_NAME_VIEW.setText(caller);
 
         ringerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -244,6 +253,11 @@ public class IncomingCallActivity extends Activity {
                 ringerLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
             }
         });
+    }
+
+    private Uri getSystemDefultRingtoneUri() {
+        return RingtoneManager.getActualDefaultRingtoneUri(this,
+                RingtoneManager.TYPE_RINGTONE);
     }
 
     public void playBeep() {
@@ -294,10 +308,16 @@ public class IncomingCallActivity extends Activity {
 
     @Subscribe
     public void onEvent(Event event) {
-        if (event instanceof CallStartedResponse) {
+        if (event instanceof CallAcceptedResponse) {
             startTimer();
+            //set up audio
+
         } else if (event instanceof CallStoppedResponse) {
             stopTimer();
+            //release audio
+        } else if (event instanceof CallDeclinedResponse) {
+            stopTimer();
+            //release audio
         } else if (event instanceof MicOffResponse) {
             MIC_TURN_OFF_VIEW.setVisibility(View.GONE);
             MIC_TURN_ON_VIEW.setVisibility(View.VISIBLE);

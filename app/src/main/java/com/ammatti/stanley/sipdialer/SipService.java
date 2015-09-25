@@ -130,8 +130,9 @@ public class SipService extends Service {
             } else if (state == LinphoneCall.State.IncomingReceived) {
                 log(call.getRemoteContact());
                 String uName = call.getRemoteContact().split(":")[1].split("@")[0];
-
-                bus.post(new ShowScreenIncomingResponse(EventName.SHOW_SCREENINCOMMINGRESPONSE));
+                ShowScreenIncomingResponse callin_event = new ShowScreenIncomingResponse(EventName.SHOW_SCREENINCOMMINGRESPONSE);
+                callin_event.setCallerNumber(uName);
+                bus.post(callin_event);
 
             } else if (call.getState() == LinphoneCall.State.StreamsRunning) {
                 if (call.getRemoteContact() != null) {
@@ -376,10 +377,10 @@ public class SipService extends Service {
         return START_STICKY;//todo: service could be killed anyway
     }
 
-    private void startIncomingActivity() {
+    private void startIncomingActivity(String caller_number) {
         Intent startIncomingCallActivtiy = new Intent(this, IncomingCallActivity.class);
         Bundle bundle = new Bundle();
-
+        bundle.putString("caller",caller_number);
         startIncomingCallActivtiy.setAction(Intent.ACTION_VIEW);
         startIncomingCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startIncomingCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -429,7 +430,8 @@ public class SipService extends Service {
         } else if (event instanceof SpeakerOnRequest) {
             // stub: further development
         } else if (event instanceof ShowScreenIncomingResponse) {
-            startIncomingActivity();
+            String caller_num = ((ShowScreenIncomingResponse) event).getCallerNumber();
+            startIncomingActivity(caller_num);
         } else if (event instanceof ShowScreenOutcomingResponse) {
             startOutcomingActivity();
         }
@@ -461,7 +463,7 @@ public class SipService extends Service {
             currentCall = lc.invite(addr);
 
             log("Call created");
-            //bus.post(new Show);
+            //bus.post(new ShowOutgoingEvent);
             // do not send ShowOutgoingEvent now, send it in "outgoingInit"
             // show it in callback
 
