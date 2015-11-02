@@ -1,12 +1,31 @@
 package com.ammatti.stanley.sipdialer;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
+
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case 1:
+                    //Strat another Activity Here
+                    Intent startSipActivity = new Intent();
+                    startSipActivity.setClass(MainActivity.this, SipActivity.class);
+                    MainActivity.this.startActivity(startSipActivity);
+                default:
+                    break;
+            }
+            return false;
+        }
+    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,9 +38,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Intent startSipActivity = new Intent();
-        startSipActivity.setClass(this, SipActivity.class);
-        this.startActivity(startSipActivity);
+        handler.sendEmptyMessageDelayed(1, 1000);
     }
 
     @Override

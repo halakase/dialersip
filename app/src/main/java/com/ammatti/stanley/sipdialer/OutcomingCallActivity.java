@@ -33,7 +33,8 @@ import com.squareup.otto.Subscribe;
  */
 public class OutcomingCallActivity extends Activity {
 
-    private Bus bus;
+    private Bus aTos_bus;
+    private Bus sToa_bus;
 
     private LinearLayout ringerLayout;
 
@@ -92,31 +93,31 @@ public class OutcomingCallActivity extends Activity {
         public void onClick(View view) {
             if (view.getId() == DENY_CALL_VIEW_ID) { // decline current call
 
-                bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
+                sToa_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
                 OutcomingCallActivity.this.finish();
                 //isInCall = false;
             } else if (view.getId() == MIC_TURN_OFF_ID) { // decline incoming
-                bus.post(new MicOffRequest(EventName.MIC_OFF_REQUEST));
+                sToa_bus.post(new MicOffRequest(EventName.MIC_OFF_REQUEST));
 
                 /*not implemented*/
             } else if (view.getId() == MIC_TURN_ON_ID) { // decline incoming
-                bus.post(new MicOnRequest(EventName.MIC_ON_REQUEST));
+                sToa_bus.post(new MicOnRequest(EventName.MIC_ON_REQUEST));
 
                 /*not implemented*/
             } else if (view.getId() == REC_START_ID) { // decline incoming
-                bus.post(new RecOnRequest(EventName.REC_ON_REQUEST));
+                sToa_bus.post(new RecOnRequest(EventName.REC_ON_REQUEST));
 
                 /*not implemented*/
             } else if (view.getId() == REC_STOP_ID) { // decline incoming
-                bus.post(new RecOffRequest(EventName.REC_OFF_REQUEST));
+                sToa_bus.post(new RecOffRequest(EventName.REC_OFF_REQUEST));
 
                 /*not implemented*/
             } else if (view.getId() == SPEAKER_ON_ID) { // decline incoming
-                bus.post(new SpeakerOnRequest(EventName.SPEAKER_ON_REQUEST));
+                sToa_bus.post(new SpeakerOnRequest(EventName.SPEAKER_ON_REQUEST));
 
                 /*not implemented*/
             } else if (view.getId() == SPEAKER_OFF_ID) { // decline incoming
-                bus.post(new SpeakerOffRequest(EventName.SPEAKER_OFF_REQUEST));
+                sToa_bus.post(new SpeakerOffRequest(EventName.SPEAKER_OFF_REQUEST));
 
                 /*not implemented*/
             }
@@ -133,8 +134,9 @@ public class OutcomingCallActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        bus = SipApplication.getBusInstance();
-        bus.register(this);
+        aTos_bus = SipApplication.getActivityToServiceBusInstance();
+        sToa_bus = SipApplication.getServiceToActivityBusInstance();
+        sToa_bus.register(this);
     }
 
     @Override
@@ -144,8 +146,8 @@ public class OutcomingCallActivity extends Activity {
         currentTimer = 0;
         stopTimer = true;
         handler.removeCallbacks(updateTimer);
-        bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
-        bus.unregister(this);
+        aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
+        sToa_bus.unregister(this);
     }
 
     private void initLayout() {

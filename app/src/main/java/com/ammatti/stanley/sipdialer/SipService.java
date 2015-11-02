@@ -30,6 +30,8 @@ import com.ammatti.stanley.sipdialer.events.responses.CallInProgressResponse;
 import com.ammatti.stanley.sipdialer.events.responses.CallStoppedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.ShowScreenIncomingResponse;
 import com.ammatti.stanley.sipdialer.events.responses.ShowScreenOutcomingResponse;
+import com.ammatti.stanley.sipdialer.events.responses.UserRegisterResponse;
+import com.ammatti.stanley.sipdialer.events.responses.UserUnRegisterResponse;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
@@ -60,7 +62,8 @@ import java.nio.ByteBuffer;
 public class SipService extends Service {
 
     public static final String TAG = "SipService";
-    private Bus bus =null;
+    public Bus aTos_bus = null;
+    public Bus sToa_bus = null;
 
     private LinphoneCore lc;
     private LinphoneCoreFactory mLcFactory;
@@ -87,6 +90,7 @@ public class SipService extends Service {
 
         @Override
         public void displayStatus(LinphoneCore lc, String message) {
+            log("displayStatus: " + message);
             //handleEvent(lc, message);
         }
 
@@ -97,11 +101,12 @@ public class SipService extends Service {
 
             if (state == LinphoneCall.State.OutgoingInit) {
                 // stub
-                bus.post(new ShowScreenOutcomingResponse(EventName.SHOW_SCREENOUTCOMMINGRESPONSE));
+                aTos_bus.post(new ShowScreenOutcomingResponse(EventName.SHOW_SCREENOUTCOMMINGRESPONSE));
             } else if (state == LinphoneCall.State.OutgoingProgress) {
                 // stub
             } else if (state == LinphoneCall.State.Connected) {
                 // stub
+                log("Call Connected");
                 requestAudioFocus();
                 setAudioManagerInCallMode(mAudioManager);
             } else if (state == LinphoneCall.State.CallEnd) {
@@ -114,7 +119,7 @@ public class SipService extends Service {
                         mAudioFocused = false;
                     }
                 }
-                bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
+                aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
             } else if (state == LinphoneCall.State.CallReleased || state == LinphoneCall.State.Error) {
                 if (currentCall != null) {
                     log("Terminating the call");
@@ -126,13 +131,13 @@ public class SipService extends Service {
                     }
                 }
 
-                bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
+                aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
             } else if (state == LinphoneCall.State.IncomingReceived) {
                 log(call.getRemoteContact());
                 String uName = call.getRemoteContact().split(":")[1].split("@")[0];
                 ShowScreenIncomingResponse callin_event = new ShowScreenIncomingResponse(EventName.SHOW_SCREENINCOMMINGRESPONSE);
                 callin_event.setCallerNumber(uName);
-                bus.post(callin_event);
+                aTos_bus.post(callin_event);
 
             } else if (call.getState() == LinphoneCall.State.StreamsRunning) {
                 if (call.getRemoteContact() != null) {
@@ -140,9 +145,9 @@ public class SipService extends Service {
                     //bus.post(new CallStartedEvent());//todo: replace this line
 
                     // note: this event is sending permanently
-                    bus.post(new CallInProgressResponse(EventName.CALL_PROGRESSRESPONSE));
+                    aTos_bus.post(new CallInProgressResponse(EventName.CALL_PROGRESSRESPONSE));
 
-                } else{
+                } else {
                     Log.e("CALL_STATE", "LinphoneCall.State.OutgoingProgress call.getRemoteContact()==null");
                 }
             } else if (message.startsWith("You have missed")) {
@@ -150,6 +155,8 @@ public class SipService extends Service {
                 log("You have missed " + Integer.valueOf(result[3]));
 
                 // todo: show notification
+            } else {
+                log("Bypass this Call State");
             }
         }
 
@@ -249,13 +256,13 @@ public class SipService extends Service {
             log("registrationState: " + state + "; smessage: " + smessage);
             boolean reg_status = SipApplication.getRegStatus();
             if (state == LinphoneCore.RegistrationState.RegistrationOk) {
-                if (reg_status == false){
+                if (reg_status == false) {
                     SipApplication.setRegStatus(true);
                 }
             } else if (state == LinphoneCore.RegistrationState.RegistrationProgress) {
                 //do nothing
             } else {
-                if (reg_status == true){
+                if (reg_status == true) {
                     SipApplication.setRegStatus(false);
                 }
             }
@@ -342,11 +349,16 @@ public class SipService extends Service {
     }
 
     public void init() {
-        if(bus == null){
+        if (sToa_bus == null) {
             //get bus
-            bus = SipApplication.getBusInstance();
+            sToa_bus = SipApplication.getServiceToActivityBusInstance();
+        }
+
+        if (aTos_bus == null) {
+            //get bus
+            aTos_bus = SipApplication.getActivityToServiceBusInstance();
             // registering bus
-            bus.register(this);
+            aTos_bus.register(this);
         }
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         try {
@@ -356,7 +368,7 @@ public class SipService extends Service {
             mLcFactory.setLogCollectionPath(Environment.getExternalStorageDirectory().getAbsolutePath()
                     + "/linphone_handler" + System.currentTimeMillis() + ".txt");
             lc = mLcFactory.createLinphoneCore(mLinphoneListener, null);
-            if(sipThread.isAlive()){
+            if (sipThread.isAlive()) {
                 sipThread.start();
             }
         } catch (LinphoneCoreException e) {
@@ -380,7 +392,7 @@ public class SipService extends Service {
     private void startIncomingActivity(String caller_number) {
         Intent startIncomingCallActivtiy = new Intent(this, IncomingCallActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putString("caller",caller_number);
+        bundle.putString("caller", caller_number);
         startIncomingCallActivtiy.setAction(Intent.ACTION_VIEW);
         startIncomingCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startIncomingCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -412,7 +424,7 @@ public class SipService extends Service {
             String server_addr = ((RegUserRequest) event).getServerAddress();
             String account = ((RegUserRequest) event).getUserAccount();
             String password = ((RegUserRequest) event).getUserPassword();
-            registerUser(server_addr,account,password);
+            registerUser(server_addr, account, password);
         } else if (event instanceof UnRegUserRequest) {
             unregisterUser();
         } else if (event instanceof StopCallRequest) {
@@ -440,9 +452,9 @@ public class SipService extends Service {
     private void acceptIncoming() {
         try {
             lc.acceptCall(currentCall);
-            bus.post(new CallAcceptedResponse(EventName.CALL_ACCEPTEDRESPONSE));
+            sToa_bus.post(new CallAcceptedResponse(EventName.CALL_ACCEPTEDRESPONSE));
         } catch (LinphoneCoreException exc) {
-            bus.post(new CallDeclinedResponse(EventName.CALL_DECLINEDRESPONSE));
+            sToa_bus.post(new CallDeclinedResponse(EventName.CALL_DECLINEDRESPONSE));
             log("LinphoneCoreException: " + (exc.getMessage() == null ? "LinphoneCoreException is null" : exc.getMessage()));
         }
     }
@@ -454,7 +466,7 @@ public class SipService extends Service {
             Log.e("SipService", "NPE");//todo: remove logs
             log("SipService receivedInCallStopped NPE");
         }
-        bus.post(new CallDeclinedResponse(EventName.CALL_DECLINEDRESPONSE));
+        sToa_bus.post(new CallDeclinedResponse(EventName.CALL_DECLINEDRESPONSE));
     }
 
     private void inviteInCall(String callee_number) {
@@ -476,7 +488,7 @@ public class SipService extends Service {
 
     private void stopCall() {
         lc.terminateCall(currentCall);
-        bus.post(new CallStoppedResponse(EventName.CALL_STOPPEDRESPONSE));
+        sToa_bus.post(new CallStoppedResponse(EventName.CALL_STOPPEDRESPONSE));
     }
 
     private void registerUser(String server_addr, String account, String password) {
@@ -503,10 +515,29 @@ public class SipService extends Service {
                 lpc.enableRegister(true);
                 lpc.done();
             }
-            log("Reg created");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (lc.getDefaultProxyConfig().getState() != LinphoneCore.RegistrationState.RegistrationOk) {
+                        lc.iterate();
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if(SipApplication.getRegStatus() == true){
+                        log("Registration Created");
+                        UserRegisterResponse reg_rsp_event = new UserRegisterResponse(EventName.USER_REGISTERRESPONSE);
+                        sToa_bus.post(reg_rsp_event);
+                    }else{
+                        log("Registration Failed");
+                    }
+                }
+            }).start();
         } catch (LinphoneCoreException e) {
             e.printStackTrace();
-            log("Invalid user address: " + server_address+ ": " + e.getMessage());
+            log("Invalid user address: " + server_address + ": " + e.getMessage());
             throw new RuntimeException(e.getMessage() == null ? "LinphoneCoreException" : e.getMessage());
         }
     }
@@ -520,6 +551,7 @@ public class SipService extends Service {
         mProxyCfg.edit();
         mProxyCfg.enableRegister(false);
         mProxyCfg.done();
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -531,7 +563,13 @@ public class SipService extends Service {
                         e.printStackTrace();
                     }
                 }
-                log("Unregistered!");
+                if(SipApplication.getRegStatus() == false){
+                    log("Unregistered !!");
+                    UserUnRegisterResponse unreg_rsp_event = new UserUnRegisterResponse(EventName.USER_UNREGISTERRESPONSE);
+                    sToa_bus.post(unreg_rsp_event);
+                }else{
+                    log("Unregistered Failed");
+                }
             }
         }).start();
     }
@@ -559,6 +597,6 @@ public class SipService extends Service {
     }
 
     private static void log(String log) {
-        Log.i(TAG,log);
+        Log.i(TAG, log);
     }
 }

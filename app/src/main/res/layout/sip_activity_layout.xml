@@ -34,13 +34,13 @@
             android:id="@+id/address_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Server Address" />
+            android:text="@string/str_address" />
 
         <EditText
             android:id="@+id/address"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="10.36.182.208" />
+            android:text="10.36.182.138" />
     </LinearLayout>
 
     <LinearLayout
@@ -52,7 +52,7 @@
             android:id="@+id/account_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Server Address" />
+            android:text="@string/str_account" />
 
         <EditText
             android:id="@+id/account"
@@ -70,7 +70,7 @@
             android:id="@+id/password_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Server Address" />
+            android:text="@string/str_password" />
 
         <EditText
             android:id="@+id/password"

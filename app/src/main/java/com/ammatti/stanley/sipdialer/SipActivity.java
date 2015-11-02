@@ -3,6 +3,8 @@ package com.ammatti.stanley.sipdialer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -15,6 +17,7 @@ import com.ammatti.stanley.sipdialer.events.EventName;
 import com.ammatti.stanley.sipdialer.events.requests.MakeCallRequest;
 import com.ammatti.stanley.sipdialer.events.requests.RegUserRequest;
 import com.ammatti.stanley.sipdialer.events.requests.UnRegUserRequest;
+import com.ammatti.stanley.sipdialer.events.responses.CallStoppedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.UserRegisterResponse;
 import com.ammatti.stanley.sipdialer.events.responses.UserUnRegisterResponse;
 import com.squareup.otto.Bus;
@@ -25,7 +28,10 @@ import com.squareup.otto.Subscribe;
  */
 public class SipActivity extends Activity {
 
-    private Bus bus;
+    public static final String TAG = "SipActivity";
+    public static final int REG_UPDATE = 1;
+    private Bus aTos_bus;
+    private Bus sToa_bus;
     private String server_address_str = "";
     private String account_str = "";
     private String password_str = "";
@@ -40,6 +46,24 @@ public class SipActivity extends Activity {
     private Button register_btn;
     private Button un_register_btn;
     private Button call_btn;
+
+
+    Handler mUIHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(msg.what == REG_UPDATE) {
+                reg_status = SipApplication.getRegStatus();
+                if (reg_status) {
+                    current_status.setText(R.string.register);
+                } else {
+                    current_status.setText(R.string.unregister);
+                }
+            }else{
+                //undefined message
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +99,7 @@ public class SipActivity extends Activity {
                     reg_event.setServerAddress(server_address_str);
                     reg_event.setUserAccount(account_str);
                     reg_event.setUserPassword(password_str);
-                    bus.post(reg_event);
+                    aTos_bus.post(reg_event);
                 }
             }
         });
@@ -93,7 +117,7 @@ public class SipActivity extends Activity {
                 callee_number.setEnabled(false);
                 //sent Event
                 UnRegUserRequest unreg_event = new UnRegUserRequest(EventName.UNREGISTER_USER_REQUEST);
-                bus.post(unreg_event);
+                aTos_bus.post(unreg_event);
             }
         });
         call_btn = (Button) findViewById(R.id.call);
@@ -108,7 +132,7 @@ public class SipActivity extends Activity {
                     //sent Event
                     MakeCallRequest call_event = new MakeCallRequest(EventName.MAKE_CALL_REQUEST);
                     call_event.setCalleeNumber(callee_number_str);
-                    bus.post(call_event);
+                    aTos_bus.post(call_event);
                 }
             }
         });
@@ -118,12 +142,13 @@ public class SipActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        bus = SipApplication.getBusInstance();
-        bus.register(this);
+        sToa_bus = SipApplication.getServiceToActivityBusInstance();
+        aTos_bus = SipApplication.getActivityToServiceBusInstance();
+        sToa_bus.register(this);
         reg_status = SipApplication.getRegStatus();
-        if(reg_status){
+        if (reg_status) {
             current_status.setText(R.string.register);
-        }else{
+        } else {
             current_status.setText(R.string.unregister);
         }
     }
@@ -131,7 +156,7 @@ public class SipActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        bus.unregister(this);
+        sToa_bus.unregister(this);
     }
 
     @Override
@@ -143,23 +168,20 @@ public class SipActivity extends Activity {
     @Subscribe
     public void onEvent(Event event) {
         if (event instanceof UserRegisterResponse) {
-            //change status lable
-            reg_status = SipApplication.getRegStatus();
-            if(reg_status){
-                current_status.setText(R.string.register);
-            }else{
-                current_status.setText(R.string.unregister);
-            }
+            //send message to change UI
+            Message msg = mUIHandler.obtainMessage();
+            msg.what = REG_UPDATE;
+            msg.sendToTarget();
         } else if (event instanceof UserUnRegisterResponse) {
-            //change status lable
-            reg_status = SipApplication.getRegStatus();
-            if(reg_status){
-                current_status.setText(R.string.register);
-            }else{
-                current_status.setText(R.string.unregister);
-            }
+            //send message to change UI
+            Message msg = mUIHandler.obtainMessage();
+            msg.what = REG_UPDATE;
+            msg.sendToTarget();
+        } else if (event instanceof CallStoppedResponse) {
+
         } else {
             //default value
+            log(event.getEventName() + " is unhandled");
         }
     }
 
@@ -177,5 +199,9 @@ public class SipActivity extends Activity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    private static void log(String log) {
+        Log.i(TAG, log);
     }
 }

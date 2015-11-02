@@ -39,8 +39,8 @@ import com.squareup.otto.Subscribe;
  */
 public class IncomingCallActivity extends Activity {
 
-    private Bus bus;
-
+    private Bus aTos_bus;
+    private Bus sToa_bus;
     private LinearLayout ringerLayout;
     private int ACCEPT_INCOMING_VIEW_ID;
     private int DENY_INCOMING_VIEW_ID;
@@ -114,17 +114,17 @@ public class IncomingCallActivity extends Activity {
                 DENY_INCOMING_VIEW.setVisibility(View.GONE);
                 // make timer visible
                 TIMER_TEXT_VIEW.setVisibility(View.VISIBLE);
-                bus.post(new AcceptCallRequest(EventName.ACCEPT_CALL_REQUEST));
+                aTos_bus.post(new AcceptCallRequest(EventName.ACCEPT_CALL_REQUEST));
                 //isInCall = true;
                 vibrator.cancel();
                 stopBeep();
             } else if (view.getId() == DENY_INCOMING_VIEW_ID) { // decline incoming
-                bus.post(new DeclineCallRequest(EventName.DECLINE_CALL_REQUEST));
+                aTos_bus.post(new DeclineCallRequest(EventName.DECLINE_CALL_REQUEST));
                 vibrator.cancel();
                 stopBeep();
                 IncomingCallActivity.this.finish();
             } else if (view.getId() == DENY_CALL_VIEW_ID) { // decline current call
-                bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
+                aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
                 //isInCall = false;
                 vibrator.cancel();
                 stopBeep();
@@ -168,8 +168,9 @@ public class IncomingCallActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        bus = SipApplication.getBusInstance();
-        bus.register(this);
+        aTos_bus = SipApplication.getActivityToServiceBusInstance();
+        sToa_bus = SipApplication.getServiceToActivityBusInstance();
+        sToa_bus.register(this);
     }
 
     @Override
@@ -181,7 +182,7 @@ public class IncomingCallActivity extends Activity {
         handler.removeCallbacks(updateTimer);
         vibrator.cancel();
         stopBeep();
-        bus.unregister(this);
+        sToa_bus.unregister(this);
     }
 
     @Override
