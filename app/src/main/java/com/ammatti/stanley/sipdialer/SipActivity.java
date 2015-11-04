@@ -30,6 +30,7 @@ public class SipActivity extends Activity {
 
     public static final String TAG = "SipActivity";
     public static final int REG_UPDATE = 1;
+    public static final int CALL_END_UPDATE = 2;
     private Bus aTos_bus;
     private Bus sToa_bus;
     private String server_address_str = "";
@@ -59,6 +60,10 @@ public class SipActivity extends Activity {
                 } else {
                     current_status.setText(R.string.unregister);
                 }
+            }else if(msg.what == CALL_END_UPDATE){
+                //unbliock UI
+                log("CALL_END_UPDATE");
+                callee_number.setEnabled(true);
             }else{
                 //undefined message
             }
@@ -178,7 +183,9 @@ public class SipActivity extends Activity {
             msg.what = REG_UPDATE;
             msg.sendToTarget();
         } else if (event instanceof CallStoppedResponse) {
-
+            Message msg = mUIHandler.obtainMessage();
+            msg.what = CALL_END_UPDATE;
+            msg.sendToTarget();
         } else {
             //default value
             log(event.getEventName() + " is unhandled");

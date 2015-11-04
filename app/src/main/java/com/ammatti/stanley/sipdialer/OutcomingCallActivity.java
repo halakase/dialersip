@@ -3,6 +3,8 @@ package com.ammatti.stanley.sipdialer;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,11 +30,14 @@ import com.ammatti.stanley.sipdialer.events.responses.dev.SpeakerOnResponse;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
+import org.linphone.mediastream.video.AndroidVideoWindowImpl;
+
 /**
  * Created by user on 25.08.15.
  */
 public class OutcomingCallActivity extends Activity {
 
+    private static final String TAG = "OutcomingCallActivity";
     private Bus aTos_bus;
     private Bus sToa_bus;
 
@@ -91,11 +96,13 @@ public class OutcomingCallActivity extends Activity {
     View.OnClickListener inCallListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            if (view.getId() == DENY_CALL_VIEW_ID) { // decline current call
-
-                sToa_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
+            if (view.getId() == DENY_CALL_VIEW_ID) {
+                // decline current call
+                Log.i(TAG,"decline current call");
+                aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
+                Log.i(TAG, "decline current call");
                 OutcomingCallActivity.this.finish();
-                //isInCall = false;
+                Log.i(TAG, "decline current call");
             } else if (view.getId() == MIC_TURN_OFF_ID) { // decline incoming
                 sToa_bus.post(new MicOffRequest(EventName.MIC_OFF_REQUEST));
 
@@ -141,13 +148,30 @@ public class OutcomingCallActivity extends Activity {
 
     @Override
     protected void onPause() {
+        Log.i(TAG,"onPause");
         super.onPause();
         isTimerStarted = false;
         currentTimer = 0;
         stopTimer = true;
         handler.removeCallbacks(updateTimer);
-        aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
         sToa_bus.unregister(this);
+    }
+
+    public void setVideoWindow(Object w) {
+        /*
+        if (mVideoWindow != null) {
+            mVideoWindow.setListener(null);
+        }
+        mVideoWindow = new AndroidVideoWindowImpl((SurfaceView) w);
+        mVideoWindow.setListener(new AndroidVideoWindowImpl.VideoWindowListener() {
+            public void onSurfaceDestroyed(AndroidVideoWindowImpl vw) {
+                setVideoWindowId(nativePtr, null);
+            }
+
+            public void onSurfaceReady(AndroidVideoWindowImpl vw) {
+                setVideoWindowId(nativePtr, vw);
+            }
+        });*/
     }
 
     private void initLayout() {

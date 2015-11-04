@@ -101,15 +101,18 @@ public class SipService extends Service {
 
             if (state == LinphoneCall.State.OutgoingInit) {
                 // stub
+                log("State OutgoingInit");
                 aTos_bus.post(new ShowScreenOutcomingResponse(EventName.SHOW_SCREENOUTCOMMINGRESPONSE));
             } else if (state == LinphoneCall.State.OutgoingProgress) {
+                log("State OutgoingProgress");
                 // stub
             } else if (state == LinphoneCall.State.Connected) {
                 // stub
-                log("Call Connected");
+                log("State Connected");
                 requestAudioFocus();
                 setAudioManagerInCallMode(mAudioManager);
             } else if (state == LinphoneCall.State.CallEnd) {
+                log("State CallEnd");
                 if (currentCall != null) {
                     log("Terminating the call");
                     lc.terminateCall(currentCall);
@@ -121,6 +124,7 @@ public class SipService extends Service {
                 }
                 aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
             } else if (state == LinphoneCall.State.CallReleased || state == LinphoneCall.State.Error) {
+                log("State CallReleased");
                 if (currentCall != null) {
                     log("Terminating the call");
                     lc.terminateCall(currentCall);
@@ -133,6 +137,7 @@ public class SipService extends Service {
 
                 aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
             } else if (state == LinphoneCall.State.IncomingReceived) {
+                log("State IncomingReceived");
                 log(call.getRemoteContact());
                 String uName = call.getRemoteContact().split(":")[1].split("@")[0];
                 ShowScreenIncomingResponse callin_event = new ShowScreenIncomingResponse(EventName.SHOW_SCREENINCOMMINGRESPONSE);
@@ -140,6 +145,7 @@ public class SipService extends Service {
                 aTos_bus.post(callin_event);
 
             } else if (call.getState() == LinphoneCall.State.StreamsRunning) {
+                log("State StreamsRunning");
                 if (call.getRemoteContact() != null) {
 
                     //bus.post(new CallStartedEvent());//todo: replace this line
@@ -368,7 +374,7 @@ public class SipService extends Service {
             mLcFactory.setLogCollectionPath(Environment.getExternalStorageDirectory().getAbsolutePath()
                     + "/linphone_handler" + System.currentTimeMillis() + ".txt");
             lc = mLcFactory.createLinphoneCore(mLinphoneListener, null);
-            if (sipThread.isAlive()) {
+            if (!sipThread.isAlive()) {
                 sipThread.start();
             }
         } catch (LinphoneCoreException e) {
