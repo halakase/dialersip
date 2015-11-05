@@ -17,6 +17,7 @@ public class SipApplication extends Application {
     private static Bus activityToService_bus = new Bus(ThreadEnforcer.ANY);
 
     private static boolean register_status = false;
+    private static boolean sToa_bus_reg_status = false;
 
     public static Bus getServiceToActivityBusInstance() {
         return serviceToActivity_bus;
@@ -32,5 +33,13 @@ public class SipApplication extends Application {
 
     public static boolean getRegStatus() {
         return register_status;
+    }
+
+    public static void setStoaBusRegStatus(boolean value) {
+        sToa_bus_reg_status = value;
+    }
+
+    public static boolean getStoaBusRegStatus() {
+        return sToa_bus_reg_status;
     }
 }
