@@ -1,6 +1,7 @@
 package com.ammatti.stanley.sipdialer;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -98,11 +99,15 @@ public class OutcomingCallActivity extends Activity {
         public void onClick(View view) {
             if (view.getId() == DENY_CALL_VIEW_ID) {
                 // decline current call
-                Log.i(TAG,"decline current call");
+                Log.i(TAG, "decline current call 1");
+                if(isTimerStarted == true){
+                    Log.i(TAG, "decline current call 2");
+                    sToa_bus.unregister(OutcomingCallActivity.this);
+                }
                 aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
-                Log.i(TAG, "decline current call");
+                Log.i(TAG, "decline current call 3");
                 OutcomingCallActivity.this.finish();
-                Log.i(TAG, "decline current call");
+                Log.i(TAG, "decline current call 4");
             } else if (view.getId() == MIC_TURN_OFF_ID) { // decline incoming
                 sToa_bus.post(new MicOffRequest(EventName.MIC_OFF_REQUEST));
 
@@ -148,13 +153,12 @@ public class OutcomingCallActivity extends Activity {
 
     @Override
     protected void onPause() {
-        Log.i(TAG,"onPause");
+        Log.i(TAG, "onPause");
         super.onPause();
-        isTimerStarted = false;
-        currentTimer = 0;
-        stopTimer = true;
-        handler.removeCallbacks(updateTimer);
-        sToa_bus.unregister(this);
+        stopTimer();
+        if(isTimerStarted == true){
+            sToa_bus.unregister(this);
+        }
     }
 
     public void setVideoWindow(Object w) {
@@ -210,7 +214,9 @@ public class OutcomingCallActivity extends Activity {
 
     private void stopTimer() {
         isTimerStarted = false;
-        // todo: stop timer
+        currentTimer = 0;
+        stopTimer = true;
+        handler.removeCallbacks(updateTimer);
     }
 
     @Subscribe
@@ -218,7 +224,8 @@ public class OutcomingCallActivity extends Activity {
         if (event instanceof CallStartedResponse) {
             startTimer();
         } else if (event instanceof CallStoppedResponse) {
-            stopTimer();
+            Log.i(TAG, "OutcomingCallActivity got CallStoppedResponse");
+            OutcomingCallActivity.this.finish();
         } else if (event instanceof MicOffResponse) {
             MIC_TURN_OFF_VIEW.setVisibility(View.GONE);
             MIC_TURN_ON_VIEW.setVisibility(View.VISIBLE);
@@ -235,6 +242,8 @@ public class OutcomingCallActivity extends Activity {
         } else if (event instanceof SpeakerOnResponse) {
             SPEAKER_ON_VIEW.setVisibility(View.GONE);
             SPEAKER_OFF_VIEW.setVisibility(View.VISIBLE);
+        }else{
+            Log.i(TAG,"OutcomingCallActivity got undefind Event");
         }
     }
 }

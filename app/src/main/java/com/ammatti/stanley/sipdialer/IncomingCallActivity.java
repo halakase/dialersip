@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
@@ -39,6 +40,7 @@ import com.squareup.otto.Subscribe;
  */
 public class IncomingCallActivity extends Activity {
 
+    private static final String TAG = "IncomingCallActivity";
     private Bus aTos_bus;
     private Bus sToa_bus;
     private LinearLayout ringerLayout;
@@ -314,9 +316,11 @@ public class IncomingCallActivity extends Activity {
             //set up audio
 
         } else if (event instanceof CallStoppedResponse) {
+            Log.i(TAG, "IncomingCallActivity got CallStoppedResponse");
             stopTimer();
             //release audio
         } else if (event instanceof CallDeclinedResponse) {
+            Log.i(TAG, "IncomingCallActivity got CallDeclinedResponse");
             stopTimer();
             //release audio
         } else if (event instanceof MicOffResponse) {
@@ -335,6 +339,8 @@ public class IncomingCallActivity extends Activity {
         } else if (event instanceof SpeakerOnResponse) {
             SPEAKER_ON_VIEW.setVisibility(View.GONE);
             SPEAKER_OFF_VIEW.setVisibility(View.VISIBLE);
+        }else{
+            Log.i(TAG,"IncomingCallActivity got undefind Event");
         }
     }
 
