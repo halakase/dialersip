@@ -145,11 +145,21 @@ public class SipActivity extends Activity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        log("onStart");
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        log("onResume");
         sToa_bus = SipApplication.getServiceToActivityBusInstance();
         aTos_bus = SipApplication.getActivityToServiceBusInstance();
-        sToa_bus.register(this);
+        if(SipApplication.getStoaBusRegStatus() == false){
+            sToa_bus.register(this);
+            SipApplication.setStoaBusRegStatus(true);
+        }
         reg_status = SipApplication.getRegStatus();
         if (reg_status) {
             current_status.setText(R.string.register);
@@ -160,13 +170,23 @@ public class SipActivity extends Activity {
 
     @Override
     protected void onPause() {
+        log("onPause");
         super.onPause();
-        sToa_bus.unregister(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        log("onStop");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if(SipApplication.getStoaBusRegStatus() == true){
+            sToa_bus.unregister(this);
+            SipApplication.setStoaBusRegStatus(false);
+        }
     }
 
 
@@ -183,6 +203,7 @@ public class SipActivity extends Activity {
             msg.what = REG_UPDATE;
             msg.sendToTarget();
         } else if (event instanceof CallStoppedResponse) {
+            log("CallStoppedResponse");
             Message msg = mUIHandler.obtainMessage();
             msg.what = CALL_END_UPDATE;
             msg.sendToTarget();

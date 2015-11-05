@@ -27,6 +27,7 @@ import com.ammatti.stanley.sipdialer.events.requests.dev.SpeakerOnRequest;
 import com.ammatti.stanley.sipdialer.events.responses.CallAcceptedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.CallDeclinedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.CallInProgressResponse;
+import com.ammatti.stanley.sipdialer.events.responses.CallStartedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.CallStoppedResponse;
 import com.ammatti.stanley.sipdialer.events.responses.ShowScreenIncomingResponse;
 import com.ammatti.stanley.sipdialer.events.responses.ShowScreenOutcomingResponse;
@@ -111,6 +112,7 @@ public class SipService extends Service {
                 log("State Connected");
                 requestAudioFocus();
                 setAudioManagerInCallMode(mAudioManager);
+                sToa_bus.post(new CallStartedResponse(EventName.CALL_STARTEDRESPONSE));
             } else if (state == LinphoneCall.State.CallEnd) {
                 log("State CallEnd");
                 if (currentCall != null) {
@@ -351,6 +353,7 @@ public class SipService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        aTos_bus.unregister(this);
         mRunning = false;
     }
 
@@ -434,6 +437,7 @@ public class SipService extends Service {
         } else if (event instanceof UnRegUserRequest) {
             unregisterUser();
         } else if (event instanceof StopCallRequest) {
+            log("StopCallRequest");
             stopCall();
         } else if (event instanceof MicOffRequest) {
             // stub: further development
@@ -494,6 +498,7 @@ public class SipService extends Service {
 
     private void stopCall() {
         lc.terminateCall(currentCall);
+        log("stopCall post CALL_STOPPEDRESPONSE");
         sToa_bus.post(new CallStoppedResponse(EventName.CALL_STOPPEDRESPONSE));
     }
 
