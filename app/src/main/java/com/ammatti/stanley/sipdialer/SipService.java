@@ -10,6 +10,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.ammatti.stanley.sipdialer.dialer.IncomingCallActivity;
+import com.ammatti.stanley.sipdialer.dialer.OutcomingCallActivity;
 import com.ammatti.stanley.sipdialer.events.Event;
 import com.ammatti.stanley.sipdialer.events.EventName;
 import com.ammatti.stanley.sipdialer.events.requests.AcceptCallRequest;

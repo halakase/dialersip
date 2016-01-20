@@ -1,4 +1,4 @@
-package com.ammatti.stanley.sipdialer;
+package com.ammatti.stanley.sipdialer.dialer;
 
 import android.app.Activity;
 import android.app.Service;
@@ -18,6 +18,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.ammatti.stanley.sipdialer.R;
+import com.ammatti.stanley.sipdialer.SipApplication;
 import com.ammatti.stanley.sipdialer.events.Event;
 import com.ammatti.stanley.sipdialer.events.EventName;
 import com.ammatti.stanley.sipdialer.events.requests.AcceptCallRequest;

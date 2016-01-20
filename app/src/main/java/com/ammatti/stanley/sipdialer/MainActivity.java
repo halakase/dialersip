@@ -4,12 +4,21 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentTabHost;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.ammatti.stanley.sipdialer.calllog.CallLogFragment;
+import com.ammatti.stanley.sipdialer.contacts.ContactsFragment;
+import com.ammatti.stanley.sipdialer.dialer.DialerFragment;
+import com.ammatti.stanley.sipdialer.voicemail.VoiceMailFragment;
+
 public class MainActivity extends Activity {
+
+    public static final String TAG = "MainActivity";
 
     Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -31,6 +40,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity_layout);
+
         Intent sipIntent = new Intent(this, SipService.class);
         startService(sipIntent);
     }

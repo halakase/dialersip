@@ -1,17 +1,17 @@
-package com.ammatti.stanley.sipdialer;
+package com.ammatti.stanley.sipdialer.dialer;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.ammatti.stanley.sipdialer.R;
+import com.ammatti.stanley.sipdialer.SipApplication;
 import com.ammatti.stanley.sipdialer.events.EventName;
 import com.ammatti.stanley.sipdialer.events.requests.StopCallRequest;
 import com.ammatti.stanley.sipdialer.events.requests.dev.MicOffRequest;
@@ -30,8 +30,6 @@ import com.ammatti.stanley.sipdialer.events.responses.dev.SpeakerOffResponse;
 import com.ammatti.stanley.sipdialer.events.responses.dev.SpeakerOnResponse;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-
-import org.linphone.mediastream.video.AndroidVideoWindowImpl;
 
 /**
  * Created by user on 25.08.15.
