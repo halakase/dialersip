@@ -40,9 +40,9 @@ import com.squareup.otto.Subscribe;
 /**
  * Created by user on 25.08.15.
  */
-public class IncomingCallActivity extends Activity {
+public class InComingCallActivity extends Activity {
 
-    private static final String TAG = "IncomingCallActivity";
+    private static final String TAG = "InComingCallActivity";
     private Bus aTos_bus;
     private Bus sToa_bus;
     private LinearLayout ringerLayout;
@@ -126,13 +126,13 @@ public class IncomingCallActivity extends Activity {
                 aTos_bus.post(new DeclineCallRequest(EventName.DECLINE_CALL_REQUEST));
                 vibrator.cancel();
                 stopBeep();
-                IncomingCallActivity.this.finish();
+                InComingCallActivity.this.finish();
             } else if (view.getId() == DENY_CALL_VIEW_ID) { // decline current call
                 aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
                 //isInCall = false;
                 vibrator.cancel();
                 stopBeep();
-                IncomingCallActivity.this.finish();
+                InComingCallActivity.this.finish();
             } else if (view.getId() == MIC_TURN_OFF_ID) { // decline incoming
                 MIC_TURN_OFF_VIEW.setVisibility(View.GONE);
                 MIC_TURN_ON_VIEW.setVisibility(View.VISIBLE);
@@ -308,7 +308,9 @@ public class IncomingCallActivity extends Activity {
 
     private void stopTimer() {
         isTimerStarted = false;
-        // todo: stop timer
+        currentTimer = 0;
+        stopTimer = true;
+        handler.removeCallbacks(updateTimer);
     }
 
     @Subscribe
@@ -318,11 +320,11 @@ public class IncomingCallActivity extends Activity {
             //set up audio
 
         } else if (event instanceof CallStoppedResponse) {
-            Log.i(TAG, "IncomingCallActivity got CallStoppedResponse");
+            Log.i(TAG, "InComingCallActivity got CallStoppedResponse");
             stopTimer();
             //release audio
         } else if (event instanceof CallDeclinedResponse) {
-            Log.i(TAG, "IncomingCallActivity got CallDeclinedResponse");
+            Log.i(TAG, "InComingCallActivity got CallDeclinedResponse");
             stopTimer();
             //release audio
         } else if (event instanceof MicOffResponse) {
@@ -342,7 +344,7 @@ public class IncomingCallActivity extends Activity {
             SPEAKER_ON_VIEW.setVisibility(View.GONE);
             SPEAKER_OFF_VIEW.setVisibility(View.VISIBLE);
         }else{
-            Log.i(TAG,"IncomingCallActivity got undefind Event");
+            Log.i(TAG,"InComingCallActivity got undefind Event");
         }
     }
 

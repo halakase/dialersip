@@ -34,9 +34,9 @@ import com.squareup.otto.Subscribe;
 /**
  * Created by user on 25.08.15.
  */
-public class OutcomingCallActivity extends Activity {
+public class OutGoingCallActivity extends Activity {
 
-    private static final String TAG = "OutcomingCallActivity";
+    private static final String TAG = "OutGoingCallActivity";
     private Bus aTos_bus;
     private Bus sToa_bus;
 
@@ -100,11 +100,11 @@ public class OutcomingCallActivity extends Activity {
                 Log.i(TAG, "decline current call 1");
                 if(isTimerStarted == true){
                     Log.i(TAG, "decline current call 2");
-                    sToa_bus.unregister(OutcomingCallActivity.this);
+                    sToa_bus.unregister(OutGoingCallActivity.this);
                 }
                 aTos_bus.post(new StopCallRequest(EventName.STOP_CALL_REQUEST));
                 Log.i(TAG, "decline current call 3");
-                OutcomingCallActivity.this.finish();
+                OutGoingCallActivity.this.finish();
                 Log.i(TAG, "decline current call 4");
             } else if (view.getId() == MIC_TURN_OFF_ID) { // decline incoming
                 sToa_bus.post(new MicOffRequest(EventName.MIC_OFF_REQUEST));
@@ -222,8 +222,8 @@ public class OutcomingCallActivity extends Activity {
         if (event instanceof CallStartedResponse) {
             startTimer();
         } else if (event instanceof CallStoppedResponse) {
-            Log.i(TAG, "OutcomingCallActivity got CallStoppedResponse");
-            OutcomingCallActivity.this.finish();
+            Log.i(TAG, "OutGoingCallActivity got CallStoppedResponse");
+            OutGoingCallActivity.this.finish();
         } else if (event instanceof MicOffResponse) {
             MIC_TURN_OFF_VIEW.setVisibility(View.GONE);
             MIC_TURN_ON_VIEW.setVisibility(View.VISIBLE);
@@ -241,7 +241,7 @@ public class OutcomingCallActivity extends Activity {
             SPEAKER_ON_VIEW.setVisibility(View.GONE);
             SPEAKER_OFF_VIEW.setVisibility(View.VISIBLE);
         }else{
-            Log.i(TAG,"OutcomingCallActivity got undefind Event");
+            Log.i(TAG,"OutGoingCallActivity got undefind Event");
         }
     }
 }

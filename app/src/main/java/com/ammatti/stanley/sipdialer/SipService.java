@@ -10,8 +10,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.ammatti.stanley.sipdialer.dialer.IncomingCallActivity;
-import com.ammatti.stanley.sipdialer.dialer.OutcomingCallActivity;
+import com.ammatti.stanley.sipdialer.dialer.InComingCallActivity;
+import com.ammatti.stanley.sipdialer.dialer.OutGoingCallActivity;
 import com.ammatti.stanley.sipdialer.events.Event;
 import com.ammatti.stanley.sipdialer.events.EventName;
 import com.ammatti.stanley.sipdialer.events.requests.AcceptCallRequest;
@@ -401,7 +401,7 @@ public class SipService extends Service {
     }
 
     private void startIncomingActivity(String caller_number) {
-        Intent startIncomingCallActivtiy = new Intent(this, IncomingCallActivity.class);
+        Intent startIncomingCallActivtiy = new Intent(this, InComingCallActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("caller", caller_number);
         startIncomingCallActivtiy.setAction(Intent.ACTION_VIEW);
@@ -412,7 +412,7 @@ public class SipService extends Service {
     }
 
     private void startOutcomingActivity() {
-        Intent startOutcomingCallActivtiy = new Intent(this, OutcomingCallActivity.class);
+        Intent startOutcomingCallActivtiy = new Intent(this, OutGoingCallActivity.class);
         Bundle bundle = new Bundle();
 
         startOutcomingCallActivtiy.setAction(Intent.ACTION_VIEW);

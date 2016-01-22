@@ -60,13 +60,13 @@
             android:windowSoftInputMode="adjustResize|stateHidden"/>
 
         <activity
-            android:name=".dialer.IncomingCallActivity"
+            android:name=".dialer.InComingCallActivity"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar"
             android:windowSoftInputMode="adjustResize|stateHidden"/>
 
         <activity
-            android:name=".dialer.OutcomingCallActivity"
+            android:name=".dialer.OutGoingCallActivity"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar"
             android:windowSoftInputMode="adjustResize|stateHidden"/>
