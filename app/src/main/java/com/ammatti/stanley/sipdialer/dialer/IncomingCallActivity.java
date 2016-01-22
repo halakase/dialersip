@@ -318,11 +318,11 @@ public class InComingCallActivity extends Activity {
         if (event instanceof CallAcceptedResponse) {
             startTimer();
             //set up audio
-
         } else if (event instanceof CallStoppedResponse) {
             Log.i(TAG, "InComingCallActivity got CallStoppedResponse");
             stopTimer();
             //release audio
+            InComingCallActivity.this.finish();
         } else if (event instanceof CallDeclinedResponse) {
             Log.i(TAG, "InComingCallActivity got CallDeclinedResponse");
             stopTimer();
