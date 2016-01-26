@@ -34,4 +34,8 @@ public class EventName {
     public static final String REC_ON_RESPONSE = "RecOnResponse";
     public static final String SPEAKER_OFF_RESPONSE = "SpeakerOffResponse";
     public static final String SPEAKER_ON_RESPONSE = "SpeakerOnResponse";
+
+    //others
+    public static final String SURFACEVIEW_EVENT = "SurfaceViewEvent";
+    public static final String ANDROIDVIDEOWIN_EVENT = "AndroidVideoWindowImplEvent";
 }
