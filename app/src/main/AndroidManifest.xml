@@ -71,6 +71,16 @@
             android:theme="@android:style/Theme.NoTitleBar"
             android:windowSoftInputMode="adjustResize|stateHidden"/>
 
+        <activity
+            android:name=".dialer.InComingVideoCallActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar"/>
+
+        <activity
+            android:name=".dialer.OutGoingVideoCallActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar"/>
+
         <service android:name=".SipService"/>
     </application>
 

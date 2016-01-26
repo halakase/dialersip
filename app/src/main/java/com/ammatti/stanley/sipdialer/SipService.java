@@ -9,11 +9,15 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.SurfaceView;
 
 import com.ammatti.stanley.sipdialer.dialer.InComingCallActivity;
+import com.ammatti.stanley.sipdialer.dialer.InComingVideoCallActivity;
 import com.ammatti.stanley.sipdialer.dialer.OutGoingCallActivity;
 import com.ammatti.stanley.sipdialer.events.Event;
 import com.ammatti.stanley.sipdialer.events.EventName;
+import com.ammatti.stanley.sipdialer.events.others.AndroidVideoWindowImplEvent;
+import com.ammatti.stanley.sipdialer.events.others.SurfaceViewEvent;
 import com.ammatti.stanley.sipdialer.events.requests.AcceptCallRequest;
 import com.ammatti.stanley.sipdialer.events.requests.DeclineCallRequest;
 import com.ammatti.stanley.sipdialer.events.requests.MakeCallRequest;
@@ -56,6 +60,7 @@ import org.linphone.core.LinphoneProxyConfig;
 import org.linphone.core.PublishState;
 import org.linphone.core.Reason;
 import org.linphone.core.SubscriptionState;
+import org.linphone.mediastream.video.AndroidVideoWindowImpl;
 
 import java.nio.ByteBuffer;
 
@@ -401,14 +406,27 @@ public class SipService extends Service {
     }
 
     private void startIncomingActivity(String caller_number) {
-        Intent startIncomingCallActivtiy = new Intent(this, InComingCallActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("caller", caller_number);
-        startIncomingCallActivtiy.setAction(Intent.ACTION_VIEW);
-        startIncomingCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startIncomingCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startIncomingCallActivtiy.putExtras(bundle);
-        this.getApplicationContext().startActivity(startIncomingCallActivtiy);
+        if(isVideoEnabled() == false){
+            //voice call
+            Intent startIncomingCallActivtiy = new Intent(this, InComingCallActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("caller", caller_number);
+            startIncomingCallActivtiy.setAction(Intent.ACTION_VIEW);
+            startIncomingCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startIncomingCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startIncomingCallActivtiy.putExtras(bundle);
+            this.getApplicationContext().startActivity(startIncomingCallActivtiy);
+        }else{
+            //video call
+            Intent startIncomingVideoCallActivtiy = new Intent(this, InComingVideoCallActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("caller", caller_number);
+            startIncomingVideoCallActivtiy.setAction(Intent.ACTION_VIEW);
+            startIncomingVideoCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startIncomingVideoCallActivtiy.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startIncomingVideoCallActivtiy.putExtras(bundle);
+            this.getApplicationContext().startActivity(startIncomingVideoCallActivtiy);
+        }
     }
 
     private void startOutcomingActivity() {
@@ -458,6 +476,15 @@ public class SipService extends Service {
             startIncomingActivity(caller_num);
         } else if (event instanceof ShowScreenOutcomingResponse) {
             startOutcomingActivity();
+        } else if (event instanceof SurfaceViewEvent) {
+            SurfaceView currentview = ((SurfaceViewEvent) event).getView();
+            setPreviewWindow(currentview);
+        }else if (event instanceof AndroidVideoWindowImplEvent) {
+            AndroidVideoWindowImpl currentwindow = ((AndroidVideoWindowImplEvent) event).getWindow();
+            setVideoWindow(currentwindow);
+        }else{
+            //got undefine event
+            Log.i(TAG, "got undefine event");
         }
     }
 
@@ -539,11 +566,11 @@ public class SipService extends Service {
                             e.printStackTrace();
                         }
                     }
-                    if(SipApplication.getRegStatus() == true){
+                    if (SipApplication.getRegStatus() == true) {
                         log("Registration Created");
                         UserRegisterResponse reg_rsp_event = new UserRegisterResponse(EventName.USER_REGISTERRESPONSE);
                         sToa_bus.post(reg_rsp_event);
-                    }else{
+                    } else {
                         log("Registration Failed");
                     }
                 }
@@ -576,21 +603,55 @@ public class SipService extends Service {
                         e.printStackTrace();
                     }
                 }
-                if(SipApplication.getRegStatus() == false){
+                if (SipApplication.getRegStatus() == false) {
                     log("Unregistered !!");
                     UserUnRegisterResponse unreg_rsp_event = new UserUnRegisterResponse(EventName.USER_UNREGISTERRESPONSE);
                     sToa_bus.post(unreg_rsp_event);
-                }else{
+                } else {
                     log("Unregistered Failed");
                 }
             }
         }).start();
     }
 
+    public void enableSpeaker(boolean value) {
+        LinphoneCall thiscall = lc.getCurrentCall();
+        if (thiscall != null) {
+            thiscall.enableEchoCancellation(value);
+        }
+        /*
+        BluetoothManager.getInstance().disableBluetoothSCO();
+        if (!value && BluetoothManager.getInstance().isBluetoothHeadsetAvailable()) {
+            BluetoothManager.getInstance().routeAudioToBluetooth();
+        }*/
+        lc.enableSpeaker(value);
+    }
+
+    public void muteMic(boolean value) {
+        lc.muteMic(value);
+    }
+
+    private boolean isVideoEnabled() {
+        return lc.isVideoEnabled();
+    }
+
+    public void setVideoWindow(Object w) {
+        lc.setVideoWindow(w);
+    }
+
+    private void setPreviewWindow(Object w) {
+        lc.setPreviewWindow(w);
+    }
+
 
     //---------------------------------------------------------------------------------------------/
     // helpful methods
     // ok, at least seemed so
+
+    public int getVideoDevice() {
+        return lc.getVideoDevice();
+    }
+
     private boolean isInCall(LinphoneCall call) {
         if (call == null)
             return false;
