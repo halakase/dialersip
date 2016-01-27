@@ -109,9 +109,9 @@ public class InComingVideoCallActivity extends Activity {
         event2.setWindow(androidVideoWindowImpl);
         aTos_bus.post(event2);
         pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        //MyTag可以随便写,可以写应用名称等
-        wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "MyTag");
-        //在释放之前，屏幕一直亮着（有可能会变暗,但是还可以看到屏幕内容,换成PowerManager.SCREEN_BRIGHT_WAKE_LOCK不会变暗）
+        //lock screen by application name
+        wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "InComingVideoCallActivity");
+        //before release, screen will turn on (if PowerManager.SCREEN_BRIGHT_WAKE_LOCK)
         wl.acquire();
     }
 
